@@ -1,0 +1,271 @@
+5 phases
+
+information gathering ( Reconnaissance )
+scanning 
+vulnerabilities ( Gainning Access )
+exploitations ( Maintaining Access )
+report ( Covering Tracks )
+
+
+tools - burp suite , vasp , cd , wappalyzer
+
+cookie, JWTS - sites works and communicate with these two things
+
+Steps to connect burp :-  download foxy proxy in firefox, in that extention click add > options > hostname : Burp | port : 8080 | ip : 127.0.0.1, download CA certificate by enabling burp, add certificate .
+
+Reconnaisance:
+
+Passive information (without interacting with the server) - google dorks, whois, Shodan
+Active Information (interacting with the server) - port scanning, nmap, bruteforce
+
+Finger printing webserver - Wappalyzer
+Google Dorks - advanced google search usiing sensitive keywords and filtering
+metafile - /robots.txt , /sitemap.xml , .htaccess , .git
+MX Lookup - to find domain information (mails, host, ip, certificates, etc)
+ctrl + u > .js  - to find source code and js scripts
+Url Gathering - Waybackurls, Katana, hakrawler
+tools for directory bruteforceing - gobuster, ffuf, dirsearch
+live urls - https
+SSl/TLs - ssl labs(to check outdated version server and weak chiper)
+Security hearder - to find missing headers
+
+google cloud console > api key
+bash - automation
+selenium, MCP, N8N - report
+non coding app 
+
+automation bash - ( gobuster, waybackurls, httpx, katana, hakrawler, dirsearch)
+
+TARGET=example.com; \
+mkdir -p recon/{httpx,urls,dirs}; \
+
+echo "[+] Checking live hosts with httpx"; \
+echo $TARGET | httpx | tee recon/httpx/live.txt; \
+
+echo "[+] Collecting URLs from Wayback"; \
+cat recon/httpx/live.txt | waybackurls | sort -u | tee recon/urls/wayback.txt; \
+
+echo "[+] Crawling with Katana"; \
+cat recon/httpx/live.txt | katana -d 3 | sort -u | tee recon/urls/katana.txt; \
+
+echo "[+] Crawling with Hakrawler"; \
+cat recon/httpx/live.txt | hakrawler -d 3 -u | sort -u | tee recon/urls/hakrawler.txt; \
+
+echo "[+] Merging all URLs"; \
+cat recon/urls/*.txt | sort -u | tee recon/urls/all_urls.txt; \
+
+echo "[+] Running Gobuster"; \
+gobuster dir -u https://$TARGET -w /usr/share/wordlists/dirb/common.txt -q -o recon/dirs/gobuster.txt; \
+
+echo "[+] Running Dirsearch"; \
+dirsearch -u https://$TARGET -e php,html,js,json,txt -q -o recon/dirs/dirsearch.txt; \
+
+echo "[✓] Recon completed"
+
+
+***** to run automation *****
+
+TARGET=http://testphp.vulnweb.com
+
+mkdir -p recon/{urls,dirs}
+
+echo $TARGET | httpx > recon/live.txt
+
+cat recon/live.txt | waybackurls | sort -u > recon/urls/wayback.txt
+cat recon/live.txt | katana -d 3 | sort -u > recon/urls/katana.txt
+cat recon/live.txt | hakrawler -d 3 -u | sort -u > recon/urls/hakrawler.txt
+
+cat recon/urls/*.txt | sort -u > recon/urls/all_urls.txt
+
+gobuster dir -u $TARGET \
+-w /usr/share/wordlists/dirb/common.txt \
+-o recon/dirs/gobuster.txt
+
+dirsearch -u $TARGET \
+-e php,html,js,json,txt \
+-o recon/dirs/dirsearch.txt
+
+
+**** Repeated use o automation ****
+
+step 1:
+
+nano recon.sh
+
+step 2:
+
+#!/bin/bash
+
+# =========================
+# Simple Web Recon Script
+# Compatible with Kali httpx version
+# =========================
+
+if [ -z "$1" ]; then
+  echo "Usage: $0 <target_url>"
+  echo "Example: $0 http://testphp.vulnweb.com"
+  exit 1
+fi
+
+TARGET=$1
+OUTDIR="recon"
+
+echo "[+] Target set to: $TARGET"
+
+# Create directories
+mkdir -p $OUTDIR/{urls,dirs}
+
+echo "[+] Checking live target with httpx"
+httpx $TARGET > $OUTDIR/live.txt
+
+if [ ! -s "$OUTDIR/live.txt" ]; then
+  echo "[-] Target not reachable. Exiting."
+  exit 1
+fi
+
+echo "[+] Collecting URLs from Wayback"
+cat $OUTDIR/live.txt | waybackurls | sort -u > $OUTDIR/urls/wayback.txt
+
+echo "[+] Crawling with Katana"
+cat $OUTDIR/live.txt | katana -d 3 | sort -u > $OUTDIR/urls/katana.txt
+
+echo "[+] Crawling with Hakrawler"
+cat $OUTDIR/live.txt | hakrawler -d 3 -u | sort -u > $OUTDIR/urls/hakrawler.txt
+
+echo "[+] Merging all discovered URLs"
+cat $OUTDIR/urls/*.txt | sort -u > $OUTDIR/urls/all_urls.txt
+
+echo "[+] Running Gobuster"
+gobuster dir -u $TARGET \
+-w /usr/share/wordlists/dirb/common.txt \
+-o $OUTDIR/dirs/gobuster.txt
+
+echo "[+] Running Dirsearch"
+dirsearch -u $TARGET \
+-e php,html,js,json,txt \
+-o $OUTDIR/dirs/dirsearch.txt
+
+echo "[✓] Recon completed successfully"
+echo "[✓] Results saved in ./$OUTDIR/"
+
+<------------------------------------------------------------------------------------------->
+
+session  -  used to communicate with the users .
+handling user access - anonymous user, authenticated user, administrator user.
+
+where session data stored :
+server side storage (more secure)
+client side storage (less secure)
+
+persistent storage - permanent storage - data wont be erased even after session restart
+non persistent storage - data will be erased if server restarts
+
+security issues - session hijacking, 
+
+extentions - burp , retire.js, shodan, darkreader, bulk url opener, cookie editor , wappalyzer
+
+session hijacking hackmore reports
+vulnerability reports
+
+session creates token when an user logged on to the server
+it should not be an sequence with alphanumberic
+it should be randomized. it shoud be encrypted.
+it should work only when user looged on , if it logged out it should be expired.
+
+
+unimelb - gmail : fowiw17862@mustaer.com , pass: Password@123
+
+<---------------------------------------------------------------------------------------->
+
+BURP - extention - Bappstore - JWT extention - install
+JSON web token extention - install
+
+session key goes to data base and gets the data
+JWT: JSON web token is faster , light weight because it doesnt always goes to database to get data , it stores data in ist token payload itself
+header(encryption , session  id) - payload(user data) - signature( verification, secret key)
+
+Portswigger lab JWT - (1 tp 7)
+
+<---------------------------------------------------------------------------------------->
+
+server - is used for processing purpose. it communicates with the client and process it to the database and clients
+
+server-side Request Forgery(SSRF) - if there is a forgery or tampering in server side request then it is SSRF.
+an SSRF attack might cause the server to make a connection to internet-only server within the organizations infrasturture. in other cases they may able to force the server to connect to the external server.
+
+If forgot password is in HTTP request that it is considered as high vulnerability. 
+
+BLind SSRF vulnerability - blind SSRF vulnerabitlity occurs if you can cause an application to issue an back-end HTTP request to a supplied URL. but the responce from the backend is not returned to the frontend
+Impact - often lower than fully informed SSRF vulnerability because of their one-way nature. They cannot be trivaly exploited to retrive sensitive data from backend systems. in some cases they may exploited to result in full-remote access
+
+<------------------------------------------------------------------------------------------>
+
+authentication - verifying users
+first line of defemse against unauthorized users
+
+types :
+Password based  Authentication
+multifactor authentication
+biometric authentication
+smartcard/token based authentication.
+certificate-based Authentication
+single sign on
+Social Media Authentication
+
+Vulnerability:
+verbous failure - password should not show and if it is wrong itshould show invalid email/pass .
+Http pass failure - password should not store in http .
+password should be strong password like ( 1 cap, alpha numeric and symbol).
+
+
+<------------------------------------------------------------------------------------------->
+
+Access control vulnerability:
+access control decides who can access what in an application. Authentication checks who the user is. 
+if an user can access what an admin can access then it is a access control vulnerabiliyy
+
+IDOR(insecure direct object references): IDOR occur when an application allow users to access or modify data by changing an ID or parameter without proper access control checks.
+
+Horizontal privilege escalation: an user can access the other users access.
+
+Vertical privilege escalation: an user can access the admin access.
+
+Prevent access control vulnerability:
+Do not depend only on hiding URLs or IDs for security.
+Block everything by default unless it is meant to be public.
+Use one central system to manage access control.
+developers must clearly define who can access each feature.
+
+<------------------------------------------------------------------------------------------->
+
+Cross-site Scripting(XSS): 
+XSS is a web security where an attacker injects malicious scripts inta a website, which then execute in victims browser. this can be used to steal cookies, deface websites
+
+input fields - search feilds.
+the input should go as a string then only it wont executed .if it goes as a text then it will be executed.
+
+varieties of XSS:
+
+reflected - the input wont be stored in the server , it will be executed only once and erased from the server.
+stored - the input will be stored in the server. and can be reused
+dom - finding vulnerability in the source code.
+
+cloudware prevents scripts from executing and either it blocks the IP or Blocks the payload.
+
+<script>alert(document.cookies)</script>
+<script>alert(document.domain)</script>
+<script>alert("Dandanaka DON")</script>
+
+
+
+<------------------------------------------------------------------------------------------->
+
+
+portswigger pass - 3%rp25?Y_%~2p#Zb2L+-gK9rM5o?7$[!
+
+sudo nano /etc/resolv.conf
+
+nameserver 8.8.8.8
+nameserver 1.1.1.1
+
+309f2aae-a0fd-46c7-a738-c030a30ed7d6
